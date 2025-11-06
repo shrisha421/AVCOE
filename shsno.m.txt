@@ -1,55 +1,57 @@
 clc;
 clear all;
 close all;
-m=input('Enter the no of message ensembles:');
-z=[];
-h=0; l=0;
-display('Enter probabilities in descending order');
-for i=l:m
-fprintf('Ensemble %d\n',i);
-display(i);
-p(i)=input('');
+
+m = input('Enter the number of message ensembles: ');
+
+p = zeros(1,m); % probability array
+
+disp('Enter probabilities in descending order:');
+for i = 1:m
+    fprintf('Ensemble %d: ', i);
+    p(i) = input('');
 end
 
-a(1)=0;
-for j=2:m;
-a(j)=a(j-1)+p(j-1);
+% Step 1: Calculate cumulative probability (alpha matrix)
+a = zeros(1,m);
+a(1) = 0;
+for j = 2:m
+    a(j) = a(j-1) + p(j-1);
 end
-fprintf('\n Alpha Matrix');
-display(a);
+disp('Alpha Matrix:');
+disp(a);
 
-for i=l:m
-n(i)=ceil(-1*(log2(p(i))));
+% Step 2: Calculate code length (n)
+n = zeros(1,m);
+for i = 1:m
+    n(i) = ceil(-log2(p(i)));
 end
-fprintf('\n Code Length Matrix');
-display(n);
+disp('Code Length Matrix:');
+disp(n);
 
-for i=l:m
-int=a(i);
-for j=l:n(i)
-frac=int*2;
-	c=floor(frac);
-frac=frac-c;
-	z=[z c];
-int=frac;
-end
-fprintf('Codeword %d',i);
-display(z);
-z=[];
+% Step 3: Generate codewords
+disp('Codewords:');
+for i = 1:m
+    z = [];
+    int = a(i);
+    for j = 1:n(i)
+        frac = int*2;
+        c = floor(frac);
+        z = [z c];
+        int = frac - c;
+    end
+    fprintf('Codeword %d: ', i);
+    disp(z);
 end
 
-fprintf('Avg. Code Length');
-for i=l:m
-	x=p(i)*n(i);
-	l=l+x;
-	x=p(i)*log2(1/p(i));
-	h=h+x;
-end
-display(1);
-fprintf('Entropy');
-display(h);
+% Step 4: Average code length, entropy, efficiency, redundancy
+Lavg = sum(p .* n);
+H = sum(p .* log2(1 ./ p));
 
-fprintf('Efficiency');
-display(100*h/l);
-fprintf('Redundancy');
-display(100-(100*h/l));
+Efficiency = 100 * H / Lavg;
+Redundancy = 100 - Efficiency;
+
+fprintf('Average Code Length: %.4f\n', Lavg);
+fprintf('Entropy: %.4f\n', H);
+fprintf('Efficiency: %.2f%%\n', Efficiency);
+fprintf('Redundancy: %.2f%%\n', Redundancy);
